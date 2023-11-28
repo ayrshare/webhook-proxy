@@ -28,6 +28,10 @@ Before you begin, ensure you have met the following requirements:
   
 Once running, the tool will display the public URL. Use this URL for webhook testing.
 
+## Run Example
+
+`node webhook-proxy.js --webhook http://localhost:8000/webhook/ --log --port 3002 --clear-logs`
+
 ## Contact
 
 - Website: [Ayrshare](https://www.ayrshare.com)
