@@ -4,7 +4,7 @@
 
 ## Overview
 
-This Webhook Proxy Tool is a Node.js application designed to create an on-the-fly publicly accessible URL for testing webhooks. It acts as a proxy, forwarding requests to a specified local URL. This is particularly useful for testing webhook integrations locally without the need to open ports or modify network configurations. Furthermore, you can log the calls both at the command line and in a file.
+This Webhook Proxy Tool is a Node.js application designed to create an on-the-fly publicly accessible URL for testing webhooks. It acts as a proxy or relay, forwarding requests to a specified local URL. This is particularly useful for testing webhook integrations locally without the need to open ports or modify network configurations. Furthermore, you can log the calls both at the command line and in a file.
 
 ## Features
 
@@ -37,3 +37,4 @@ Once running, the tool will display the public URL. Use this URL for webhook tes
 ## Contact
 
 - Website: [Ayrshare](https://www.ayrshare.com)
+- Blog Article on [Webhook Proxt Tool](https://www.ayrshare.com/streamlining-webhook-development-how-a-webhook-proxy-tool-can-transform-your-workflow/)
