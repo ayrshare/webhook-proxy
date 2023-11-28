@@ -1,15 +1,27 @@
 {
   "name": "webhook-proxy",
-  "version": "1.0.0",
-  "description": "Webhook Proxy for testing webhooks locally",
+  "version": "1.0.1",
+  "description": "Webhook Proxy for testing webhooks locally.",
   "type": "module",
-  "main": "index.js",
+  "main": "webhook-proxy.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "url": "https://www.ayrshare.com",
+  "homepage": "https://www.ayrshare.com",
+  "license": "ISC",
+  "keywords": ["webhook", "proxy", "relay", "local", "testing"],
+  "author": "@ayrshare",
+  "bugs": {
+		"url": "https://github.com/ayrshare/webhook-proxy/issues"
+	},
+  "bin": {
+		"webhook-proxy": "./webhook-proxy.js"
+	},
+  "repository": {
+		"type": "git",
+		"url": "git+https://github.com/ayrshare/webhook-proxy"
+	},
   "dependencies": {
     "express": "^4.18.2",
     "localtunnel": "^2.0.2",

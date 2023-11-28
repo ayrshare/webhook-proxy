@@ -15,6 +15,10 @@ This Webhook Proxy Tool is a Node.js application designed to create an on-the-fl
 - **Log Management**: Option to clear existing logs and start fresh upon starting the tool.
 - **Public URL Generation**: Uses LocalTunnel to expose your local server to the internet.
 
+## NPM Install
+
+`npm install -g webhook-proxy`
+
 ## Prerequisites
 
 Before you begin, ensure you have met the following requirements:
