@@ -2,6 +2,7 @@ import express from "express";
 import localtunnel from "localtunnel";
 import { appendFileSync, writeFileSync, existsSync } from "fs";
 import { nanoid } from "nanoid";
+import { createProxyMiddleware } from "http-proxy-middleware";
 
 const LOG_FILE = "webhook.log";
 
@@ -22,9 +23,56 @@ if (isNaN(specifiedPort)) {
   process.exit(1);
 }
 
-if (!localUrl && webhookIndex !== -1) {
-  console.error("Please specify a URL after --webhook.");
-  process.exit(1);
+const app = express();
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const logEntry = (message) => {
+  if (shouldLog) {
+    console.log(message);
+    appendFileSync(LOG_FILE, message);
+  }
+};
+
+if (localUrl) {
+  const proxyMiddleware = createProxyMiddleware({
+    target: localUrl,
+    changeOrigin: true,
+    logLevel: shouldLog ? "debug" : "silent",
+    onProxyReq: (proxyReq, req) => {
+      if (
+        req.body &&
+        req.method === "POST" &&
+        proxyReq.getHeader("Content-Type") === "application/json"
+      ) {
+        const processId = nanoid();
+        req.processId = processId;
+
+        const bodyData = JSON.stringify(req.body);
+        logEntry(
+          `Process Id: ${processId}, Request to to ${req.method} ${req.originalUrl} from ${localUrl}\n> ${bodyData}`
+        );
+
+        proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
+        proxyReq.write(bodyData);
+      }
+    },
+    onProxyRes: (proxyRes, req, res) => {
+      let responseBody = "";
+      proxyRes.on("data", (chunk) => {
+        responseBody += chunk;
+      });
+      proxyRes.on("end", () => {
+        logEntry(
+          `Process Id: ${req.processId}, Response from ${localUrl} to ${req.method} ${req.originalUrl}: Status ${proxyRes.statusCode}\n> ${responseBody}\n`
+        );
+      });
+    }
+  });
+
+  app.use("/", proxyMiddleware);
+} else {
+  console.log("No target URL provided; running as a simple server.");
 }
 
 if (shouldClearLogs !== -1) {
@@ -34,68 +82,11 @@ if (shouldClearLogs !== -1) {
   }
 }
 
-const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
-const prettyPrintJSON = (input) => {
-  try {
-    return JSON.stringify(JSON.parse(input), null, 2);
-  } catch (e) {
-    return input; // Return the original input if it's not JSON
-  }
-};
-
-const logRequest = (req, body, id) => {
-  const prettyBody = prettyPrintJSON(body);
-  const logEntry = `Process Id: ${id}\nReceived at ${new Date().toISOString()}\nHTTP Method: ${
-    req.method
-  }\nQuery: ${req.originalUrl}\nBody:\n${prettyBody}\n`;
-  if (shouldLog) {
-    console.log(logEntry);
-    appendFileSync(LOG_FILE, logEntry);
-  }
-};
-
-app.all("*", async (req, res) => {
-  let options;
-  try {
-    const requestBody = JSON.stringify(req.body);
-    const id = nanoid();
-    logRequest(req, requestBody, id);
-
-    if (localUrl) {
-      const { method, headers } = req;
-      options = Object.assign(
-        {
-          method,
-          headers
-        },
-        method.toUpperCase() !== "GET" && requestBody && { body: requestBody }
-      );
-      const response = await fetch(localUrl, options);
-
-      const responseBody = await response.text();
-      if (shouldLog) {
-        console.log(`Process Id: ${id}\nWebhook Response:\n${responseBody}\n`);
-        appendFileSync(LOG_FILE, responseBody);
-      }
-
-      res.status(response.status).send(responseBody);
-    } else {
-      res.status(200).send("Request logged");
-    }
-  } catch (e) {
-    console.error("Error forwarding the request:", localUrl, options, e);
-    res.status(500).send("Error forwarding the request");
-  }
-});
-
 const startProxy = async () => {
   app.listen(specifiedPort, async () => {
     try {
       const tunnel = await localtunnel({ port: specifiedPort });
-      console.log(`Webhook proxy is now listening at ${tunnel.url}`);
+      console.log(`\nWebhook proxy is now listening at ${tunnel.url}\n`);
       if (localUrl) {
         console.log(
           `All requests on this endpoint will be forwarded to your webhook url: ${localUrl}`
