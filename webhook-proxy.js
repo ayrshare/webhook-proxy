@@ -50,7 +50,7 @@ if (localUrl) {
 
         const bodyData = JSON.stringify(req.body);
         logEntry(
-          `Process Id: ${processId}, Request to to ${req.method} ${req.originalUrl} from ${localUrl}\n> ${bodyData}`
+          `Request Process Id: ${processId}, Request to ${req.method} ${req.originalUrl} from ${localUrl}\n> ${bodyData}\n`
         );
 
         proxyReq.setHeader("Content-Length", Buffer.byteLength(bodyData));
@@ -64,7 +64,7 @@ if (localUrl) {
       });
       proxyRes.on("end", () => {
         logEntry(
-          `Process Id: ${req.processId}, Response from ${localUrl} to ${req.method} ${req.originalUrl}: Status ${proxyRes.statusCode}\n> ${responseBody}\n`
+          `Response Process Id: ${req.processId}, Response from ${localUrl} to ${req.method} ${req.originalUrl}: Status ${proxyRes.statusCode}\n> ${responseBody}\n`
         );
       });
     }
